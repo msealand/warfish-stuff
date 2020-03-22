@@ -72,7 +72,7 @@ export async function drawMap(game: Game) {
             gradient.addColorStop(0, (territory.continent as any).color);
             gradient.addColorStop(1, (otherTerritory.continent as any).color);
             ctx.strokeStyle = gradient;
-            ctx.lineWidth = 1.5;
+            ctx.lineWidth = 1.0;
 
             ctx.beginPath();
             ctx.moveTo(pos.x, pos.y);
