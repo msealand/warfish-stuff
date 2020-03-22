@@ -37,10 +37,13 @@ export async function drawMap(game: Game) {
     const wrapDeltaHeight = (game.map.height * WRAP_DELTA_PERCENT);
 
     let hue = 0.0;
+    let saturation1 = '100%';
+    let saturation2 = '50%';
     const hDelta = 360.0 / game.map.continents.size;
     game.map.continents.forEach((continent) => {
         hue = Math.round(hue + hDelta);
-        (continent as any).color = `hsl(${hue}, 100%, 50%)`;
+        (continent as any).color = `hsl(${hue}, ${saturation1}, 50%)`;
+        (continent as any).backgroundColor = `hsla(${hue}, ${saturation2}, 50%, 0.3)`;
     });
 
 
@@ -69,7 +72,7 @@ export async function drawMap(game: Game) {
             gradient.addColorStop(0, (territory.continent as any).color);
             gradient.addColorStop(1, (otherTerritory.continent as any).color);
             ctx.strokeStyle = gradient;
-            ctx.lineWidth = 0.5;
+            ctx.lineWidth = 1.5;
 
             ctx.beginPath();
             ctx.moveTo(pos.x, pos.y);
@@ -82,12 +85,12 @@ export async function drawMap(game: Game) {
     game.map.territories.forEach((territory) => {
         const pos = territory.position;
 
-        ctx.fillStyle = 'rgba(255,255,255,0.4)'
+        ctx.fillStyle = (territory.continent as any).backgroundColor;
         ctx.strokeStyle = (territory.continent as any).color;
-        ctx.lineWidth = 2.0;
+        ctx.lineWidth = 1.5;
 
         ctx.beginPath();
-        ctx.arc(pos.x, pos.y, 8, 0, 2 * Math.PI, false);
+        ctx.arc(pos.x, pos.y, 9, 0, 2 * Math.PI, false);
         ctx.fill();
         ctx.stroke();
     })
