@@ -2,13 +2,12 @@ import * as request from 'request-promise-native';
 import { resolve } from 'path';
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
 
-const cookiePath = resolve(process.env["COOKIE_PATH"] || 'cookie');
 const cachePath = resolve(process.env["CACHE_PATH"] || 'cache');
-
 if (!existsSync(cachePath)) {
     mkdirSync(cachePath);
 }
 
+const cookiePath = resolve(process.env["COOKIE_PATH"] || 'cookie');
 if (!cookiePath || !existsSync(cookiePath)) { console.log(`No cookie at ${cookiePath}`) }
 const cookie = request.cookie(readFileSync(cookiePath, { encoding: 'utf8' }));
 

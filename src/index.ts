@@ -3,6 +3,7 @@ import { getHistory, getState, getDetails } from './api';
 // import { getData } from './units';
 
 import { Game } from './game';
+import { drawMap } from './drawMap';
 
 const gameId = process.argv[2];
 if (!gameId) { console.log(`No gameId`); process.exit(-1); }
@@ -31,9 +32,11 @@ async function go() {
     // console.dir(game.rules, { depth: null });
     // console.log();
 
-    console.log(`Map:`);
-    console.dir(game.map, { depth: 4 });
-    console.log();
+    // console.log(`Map:`);
+    // console.dir(game.map, { depth: 4 });
+    // console.log();
+
+    drawMap(game);
 }
 
 go();

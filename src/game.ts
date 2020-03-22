@@ -27,6 +27,8 @@ export class Territory {
 
     readonly borderingTerritories = new Set<Territory>();
 
+    continent: Continent;
+
     addBorderingTerritory(territory: Territory) {
         this.borderingTerritories.add(territory);
     }
@@ -37,6 +39,8 @@ export class Continent {
         this.id = data.id;
         this.name = data.name;
         this.units = Number(data.units);
+
+        this.territoryCount = data.cids.split(',').length;
     }
 
     readonly id: string;
@@ -44,10 +48,15 @@ export class Continent {
 
     readonly units: number;
 
+    readonly territoryCount: number;
     readonly territories = new Set<Territory>();
 
     addTerritory(territory: Territory) {
         this.territories.add(territory);
+
+        if (!territory.continent || (territory.continent.territoryCount > this.territoryCount)) {
+            territory.continent = this;
+        }
     }
 }
 
@@ -63,6 +72,8 @@ export class GameMap {
         delete cleanData.territory;
 
         Object.assign(this, cleanData);
+        this.width = Number(cleanData.width);
+        this.height = Number(cleanData.height);
 
         territories.forEach((data) => {
             const territory = new Territory(data);
@@ -78,6 +89,9 @@ export class GameMap {
             this.continents.set(continent.id, continent);
         });
     }
+
+    readonly width: number;
+    readonly height: number;
 
     readonly territories = new Map<string, Territory>();
     readonly continents = new Map<string, Continent>();
@@ -106,13 +120,16 @@ export class Game {
         return game;
     }
 
-    private constructor(private gameId: string) { }
+    private constructor(gameId: string) {
+        this.id = gameId;
+    }
 
+    readonly id: string;
     readonly rules: Rules;
     readonly map: GameMap;
 
     private async load() {
-        const details = await getDetails(this.gameId);
+        const details = await getDetails(this.id);
 
         // Cast to any to get around readonly
         (this as any).rules = new Rules(details.rules);
