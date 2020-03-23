@@ -19,13 +19,13 @@ async function go() {
 
     // console.log()
 
-    const history = await getHistory(gameId);
-    console.dir(history, { depth: null });
+    // const history = await getHistory(gameId);
+    // console.dir(history, { depth: null });
 
     // const data = await getData(gameId);
     // console.dir(data, { depth: null });
 
-    // const game = await Game.ForId(gameId);
+    const game = await Game.ForId(gameId);
 
     // console.log(`Rules:`);
     // console.dir(game.rules, { depth: null });
