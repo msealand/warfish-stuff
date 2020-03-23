@@ -61,6 +61,29 @@ export class Continent {
     }
 }
 
+export class GameColor {
+
+    constructor(data: any) {
+        this.id = data.id;
+        this.name = data.name;
+
+        this.red = Number(data.red);
+        this.green = Number(data.green);
+        this.blue = Number(data.blue);
+    }
+
+    readonly id: string;
+    readonly name: string;
+
+    readonly red: number;
+    readonly green: number;
+    readonly blue: number;
+
+    cssColor(): string {
+        return `rgb(${this.red},${this.green},${this.blue})`;
+    }
+}
+
 export class GameMap {
     constructor(mapData: any, continentData: any) {
         const cleanData: any = {};
@@ -71,6 +94,11 @@ export class GameMap {
 
         const territories = cleanData.territory;
         delete cleanData.territory;
+
+        const colors = cleanData.color.map((c) => new GameColor(c));
+        colors.forEach((c) => {
+            this.colors.set(c.id, c);
+        })
 
         Object.assign(this, cleanData);
         this.width = Number(cleanData.width);
@@ -96,6 +124,8 @@ export class GameMap {
 
     readonly territories = new Map<string, Territory>();
     readonly continents = new Map<string, Continent>();
+
+    readonly colors = new Map<string, GameColor>();
 }
 
 function loadMapWithBoardData(map: GameMap, data: any) {
@@ -114,13 +144,17 @@ function loadMapWithBoardData(map: GameMap, data: any) {
 }
 
 export class Player {
-    constructor(data: any) {
+    constructor(data: any, game: Game) {
         this.id = data.id
         this.name = data.name;
+
+        this.color = game.map.colors.get(data.colorid);
     } 
 
     readonly id: string;
     readonly name: string;
+
+    readonly color: GameColor;
 }
 
 export class Game {
@@ -159,7 +193,7 @@ export class Game {
         delete details.board;
 
         const gameStateData = await getState(this.id);
-        const players = (gameStateData.players._content.player || []).map((p) => new Player(p));
+        const players = (gameStateData.players._content.player || []).map((p) => new Player(p, this));
         players.forEach((p) => this.players.set(p.id, p));
 
         const history = await getHistory(this.id);
@@ -169,7 +203,7 @@ export class Game {
             // console.dir(m);
             const move = GameMove.FromData(m, this);
             // console.dir(move);
-            console.log(move?.description());
+            // console.log(move?.description());
             return move;
         });
         this.moves.push(...moves);

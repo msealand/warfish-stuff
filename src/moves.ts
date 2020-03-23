@@ -118,7 +118,7 @@ export class GameMove {
     }
 }
 
-class GameMoveAttack extends GameMove { 
+export class GameMoveAttack extends GameMove { 
     constructor(data: any, game: Game) {
         super(data, game);
 
@@ -149,12 +149,12 @@ class GameMoveAttack extends GameMove {
         return `${this.attacker?.name} in ${this.fromTerritory?.name} attacked ${this.defender?.name} in ${this.toTerritory?.name} and lost ${this.attackerLosses} units; ${this.defender?.name} lost ${this.defenderLosses} units`;
     }
 }
-class GameMoveEliminatePlayerBonusUnits extends GameMove { 
+export class GameMoveEliminatePlayerBonusUnits extends GameMove { 
     constructor(data: any, game: Game) {
         super(data, game);
     }
 }
-class GameMoveCaptureTerritory extends GameMove { 
+export class GameMoveCaptureTerritory extends GameMove { 
     constructor(data: any, game: Game) {
         super(data, game);
 
@@ -172,12 +172,12 @@ class GameMoveCaptureTerritory extends GameMove {
         return `${this.attacker?.name} captured ${this.capturedTerritory?.name} from ${this.defender?.name}`;
     }
 }
-class GameMoveDeclineToJoinAGame extends GameMove { 
+export class GameMoveDeclineToJoinAGame extends GameMove { 
     constructor(data: any, game: Game) {
         super(data, game);
     }
 }
-class GameMoveEliminatePlayer extends GameMove { 
+export class GameMoveEliminatePlayer extends GameMove { 
     constructor(data: any, game: Game) {
         super(data, game);
 
@@ -192,7 +192,7 @@ class GameMoveEliminatePlayer extends GameMove {
         return `${this.attacker?.name} eliminated ${this.defender?.name}`;
     }
 }
-class GameMoveTransfer extends GameMove { 
+export class GameMoveTransfer extends GameMove { 
     constructor(data: any, game: Game) {
         super(data, game);
 
@@ -213,7 +213,7 @@ class GameMoveTransfer extends GameMove {
         return `${this.player?.name} transfered ${this.units} from ${this.fromTerritory?.name} to ${this.toTerritory?.name}`;
     }
 }
-class GameMoveAwardedCard extends GameMove { 
+export class GameMoveAwardedCard extends GameMove { 
     constructor(data: any, game: Game) {
         super(data, game);
 
@@ -226,7 +226,7 @@ class GameMoveAwardedCard extends GameMove {
         return `${this.player?.name} was awarded a card`;
     }
 }
-class GameMoveCaptureCards extends GameMove { 
+export class GameMoveCaptureCards extends GameMove { 
     constructor(data: any, game: Game) {
         super(data, game);
 
@@ -245,12 +245,12 @@ class GameMoveCaptureCards extends GameMove {
     }
 
 }
-class GameMoveCaptureReserveUnits extends GameMove { 
+export class GameMoveCaptureReserveUnits extends GameMove { 
     constructor(data: any, game: Game) {
         super(data, game);
     }
 }
-class GameMoveJoinGame extends GameMove { 
+export class GameMoveJoinGame extends GameMove { 
     constructor(data: any, game: Game) {
         super(data, game);
 
@@ -263,17 +263,17 @@ class GameMoveJoinGame extends GameMove {
         return `${this.player?.name} joined`;
     }
 }
-class GameMoveSeatOrderForBlindAtOnceRound extends GameMove { 
+export class GameMoveSeatOrderForBlindAtOnceRound extends GameMove { 
     constructor(data: any, game: Game) {
         super(data, game);
     }
 }
-class GameMoveBlindTerritorySelect extends GameMove { 
+export class GameMoveBlindTerritorySelect extends GameMove { 
     constructor(data: any, game: Game) {
         super(data, game);
     }
 }
-class GameMoveMessage extends GameMove { 
+export class GameMoveMessage extends GameMove { 
     constructor(data: any, game: Game) {
         super(data, game);
 
@@ -288,12 +288,12 @@ class GameMoveMessage extends GameMove {
         return `${this.player?.name} post message "${this.message}"`
     }
 }
-class GameMoveCreateNewGame extends GameMove { 
+export class GameMoveCreateNewGame extends GameMove { 
     constructor(data: any, game: Game) {
         super(data, game);
     }
 }
-class GameMoveAssignSeatPosition extends GameMove { 
+export class GameMoveAssignSeatPosition extends GameMove { 
     constructor(data: any, game: Game) {
         super(data, game);
 
@@ -308,7 +308,7 @@ class GameMoveAssignSeatPosition extends GameMove {
         return `${this.player?.name} is in position ${this.position}`;
     }
 }
-class GameMovePlaceUnit extends GameMove { 
+export class GameMovePlaceUnit extends GameMove { 
     constructor(data: any, game: Game) {
         super(data, game);
 
@@ -325,12 +325,12 @@ class GameMovePlaceUnit extends GameMove {
         return `${this.player?.name} placed ${this.units} units on ${this.territory?.name}`
     }
 }
-class GameMoveBlindAtOnceTransfer extends GameMove { 
+export class GameMoveBlindAtOnceTransfer extends GameMove { 
     constructor(data: any, game: Game) {
         super(data, game);
     }
 }
-class GameMoveReshuffleCards extends GameMove { 
+export class GameMoveReshuffleCards extends GameMove { 
     constructor(data: any, game: Game) {
         super(data, game);
     }
@@ -339,7 +339,7 @@ class GameMoveReshuffleCards extends GameMove {
         return `cards re-shuffled`
     }
 }
-class GameMoveStartGame extends GameMove { 
+export class GameMoveStartGame extends GameMove { 
     constructor(data: any, game: Game) {
         super(data, game);
     }
@@ -348,7 +348,7 @@ class GameMoveStartGame extends GameMove {
         return `start game`;
     }
 }
-class GameMoveSelectTerritory extends GameMove { 
+export class GameMoveSelectTerritory extends GameMove { 
     constructor(data: any, game: Game) {
         super(data, game);
 
@@ -363,7 +363,7 @@ class GameMoveSelectTerritory extends GameMove {
         return `${this.player?.name} selected ${this.territory?.name}`
     }
 }
-class GameMoveUseCards extends GameMove { 
+export class GameMoveUseCards extends GameMove { 
     constructor(data: any, game: Game) {
         super(data, game);
 
@@ -378,12 +378,12 @@ class GameMoveUseCards extends GameMove {
         return `${this.player?.name} used cards and received ${this.units} units`;
     }
 }
-class GameMoveBlindAtOnceAttack extends GameMove { 
+export class GameMoveBlindAtOnceAttack extends GameMove { 
     constructor(data: any, game: Game) {
         super(data, game);
     }
 }
-class GameMoveWin extends GameMove { 
+export class GameMoveWin extends GameMove { 
     constructor(data: any, game: Game) {
         super(data, game);
 
@@ -396,7 +396,7 @@ class GameMoveWin extends GameMove {
         return `${this.winner?.name} won`;
     }
 }
-class GameMoveTerritorySelectedAsNeutral extends GameMove { 
+export class GameMoveTerritorySelectedAsNeutral extends GameMove { 
     constructor(data: any, game: Game) {
         super(data, game);
 
@@ -409,7 +409,7 @@ class GameMoveTerritorySelectedAsNeutral extends GameMove {
         return `${this.territory?.name} is neutral territory`
     }
 }
-class GameMoveBonusUnits extends GameMove { 
+export class GameMoveBonusUnits extends GameMove { 
     constructor(data: any, game: Game) {
         super(data, game);
 
@@ -424,22 +424,22 @@ class GameMoveBonusUnits extends GameMove {
         return `${this.player.name} was awarded ${this.units} units`
     }
 }
-class GameMoveSurrender extends GameMove { 
+export class GameMoveSurrender extends GameMove { 
     constructor(data: any, game: Game) {
         super(data, game);
     }
 }
-class GameMoveBooted extends GameMove { 
+export class GameMoveBooted extends GameMove { 
     constructor(data: any, game: Game) {
         super(data, game);
     }
 }
-class GameMoveGameTerminated extends GameMove { 
+export class GameMoveGameTerminated extends GameMove { 
     constructor(data: any, game: Game) {
         super(data, game);
     }
 }
-class GameMoveTeamWin extends GameMove { 
+export class GameMoveTeamWin extends GameMove { 
     constructor(data: any, game: Game) {
         super(data, game);
     }

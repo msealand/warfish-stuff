@@ -4,10 +4,11 @@ import { resolve } from 'path';
 import { existsSync, readFileSync, writeFileSync, mkdirSync, fstat } from 'fs';
 
 import { Game } from "./game";
+import { GameMove, GameMoveAttack } from './moves';
 
 const WRAP_DELTA_PERCENT = 0.5;
 
-export async function drawMap(game: Game) {
+export async function drawMap(game: Game, move?: GameMove) {
 
     const cachePath = resolve(process.env["CACHE_PATH"] || 'cache');
     if (!existsSync(cachePath)) {
@@ -42,10 +43,9 @@ export async function drawMap(game: Game) {
     const hDelta = 360.0 / game.map.continents.size;
     game.map.continents.forEach((continent) => {
         hue = Math.round(hue + hDelta);
-        (continent as any).color = `hsl(${hue}, ${saturation1}, 50%)`;
+        (continent as any).color = `hsl(${hue}, ${saturation1}, 70%)`;
         (continent as any).backgroundColor = `hsla(${hue}, ${saturation2}, 50%, 0.3)`;
     });
-
 
     ctx.save();
     ctx.globalAlpha = 0.6;
@@ -85,8 +85,19 @@ export async function drawMap(game: Game) {
     game.map.territories.forEach((territory) => {
         const pos = territory.position;
 
-        ctx.fillStyle = (territory.continent as any).backgroundColor;
+        if (move instanceof GameMoveAttack) {
+            if (territory.id == move.fromTerritory.id) {
+                ctx.fillStyle = move.attacker.color?.cssColor() ?? 'red';
+            } else if (territory.id == move.toTerritory.id) {
+                ctx.fillStyle = move.defender.color?.cssColor() ?? 'blue';
+            } else {
+                ctx.fillStyle = 'rgb(64,64,64)'
+            }
+        } else {
+            ctx.fillStyle = (territory.continent as any).backgroundColor;
+        }
         ctx.strokeStyle = (territory.continent as any).color;
+
         ctx.lineWidth = 1.5;
 
         ctx.beginPath();
