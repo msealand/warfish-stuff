@@ -9,13 +9,13 @@ const gameId = process.argv[2];
 if (!gameId) { console.log(`No gameId`); process.exit(-1); }
 
 async function go() {
-    // const detilas = await getDetails(gameId);
-    // console.dir(detilas, { depth: 2 });    
+    const detilas = await getDetails(gameId);
+    console.dir(detilas, { depth: 2 });    
     
-    // console.log()
+    console.log()
 
-    // const gameStateData = await getState(gameId);
-    // console.dir(gameStateData, { depth: null });
+    const gameStateData = await getState(gameId);
+    console.dir(gameStateData, { depth: null });
 
     // console.log()
 
@@ -25,7 +25,7 @@ async function go() {
     // const data = await getData(gameId);
     // console.dir(data, { depth: null });
 
-    const game = await Game.ForId(gameId);
+    // const game = await Game.ForId(gameId);
 
     // console.log(`Rules:`);
     // console.dir(game.rules, { depth: null });
