@@ -1,11 +1,7 @@
 import * as request from 'request-promise-native';
 import { resolve } from 'path';
-import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
-
-const cachePath = resolve(process.env["CACHE_PATH"] || 'cache');
-if (!existsSync(cachePath)) {
-    mkdirSync(cachePath);
-}
+import { existsSync, readFileSync, mkdirSync } from 'fs';
+import { readCache, writeCache } from './cache';
 
 const cookiePath = resolve(process.env["COOKIE_PATH"] || 'cookie');
 if (!cookiePath || !existsSync(cookiePath)) { console.log(`No cookie at ${cookiePath}`) }
@@ -30,17 +26,8 @@ function parseAPIData(data: any) {
 export async function call(gameId: string, path: string, params: any, cacheFile?: string): Promise<any> {
     let cacheFilePath: string = undefined;
     if (cacheFile) {
-        const gameDir = resolve(cachePath, gameId);
-        if (!existsSync(gameDir)) {
-            mkdirSync(gameDir);
-        }
-
-        cacheFilePath = resolve(gameDir, cacheFile);
-        if (existsSync(cacheFilePath)) {
-            console.log(`reading from cache ${cacheFilePath}`);
-            const data = readFileSync(cacheFilePath);
-            return parseAPIData(data);
-        }
+        const data = await readCache(gameId, cacheFile);
+        if (data) return parseAPIData(data);
     }
 
     const url = `${baseUrl}${path}`;
@@ -49,7 +36,7 @@ export async function call(gameId: string, path: string, params: any, cacheFile?
 
     if (cacheFilePath) {
         console.log(`saving to cache ${cacheFilePath}`);
-        writeFileSync(cacheFilePath, body); // <-- cache body, not data
+        await writeCache(gameId, data, cacheFile);
     }
 
     return data;
