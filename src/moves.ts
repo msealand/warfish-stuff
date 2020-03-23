@@ -1,4 +1,4 @@
-import { Game, Territory } from "./game";
+import { Game, Territory, Player } from "./game";
 
 export enum GameAction {
     Attack = "a",
@@ -105,20 +105,28 @@ export class GameMove {
     }
 
     constructor(data: any, game: Game) {
+        Object.assign(this, data);
+
         this.date = new Date(data.t * 1000);
     }
 
     readonly action: GameAction;
     readonly date: Date;
+
+    description(): string {
+        return `${this.constructor.name} ${JSON.stringify(this)}`;
+    }
 }
 
 class GameMoveAttack extends GameMove { 
     constructor(data: any, game: Game) {
         super(data, game);
 
+        this.defender = game.players.get(data.ds);
         this.defenderDice = data.dd.split(',').map(Number);
         this.defenderLosses = Number(data.dl);
 
+        this.attacker = game.players.get(data.s);
         this.attackerDice = data.ad.split(',').map(Number);
         this.attackerLosses = Number(data.al);
 
@@ -126,14 +134,20 @@ class GameMoveAttack extends GameMove {
         this.toTerritory = game.map.territories.get(data.tcid);
     }
 
+    readonly defender: Player;
     readonly defenderDice: Array<number>;
     readonly defenderLosses: number;
 
+    readonly attacker: Player;
     readonly attackerDice: Array<number>;
     readonly attackerLosses: number;
 
     readonly fromTerritory: Territory;
     readonly toTerritory: Territory;
+
+    description(): string {
+        return `${this.attacker?.name} in ${this.fromTerritory?.name} attacked ${this.defender?.name} in ${this.toTerritory?.name} and lost ${this.attackerLosses} units; ${this.defender?.name} lost ${this.defenderLosses} units`;
+    }
 }
 class GameMoveEliminatePlayerBonusUnits extends GameMove { 
     constructor(data: any, game: Game) {
@@ -143,6 +157,19 @@ class GameMoveEliminatePlayerBonusUnits extends GameMove {
 class GameMoveCaptureTerritory extends GameMove { 
     constructor(data: any, game: Game) {
         super(data, game);
+
+        this.attacker = game.players.get(data.s);
+        this.defender = game.players.get(data.ds);
+        this.capturedTerritory = game.map.territories.get(data.cid);
+    }
+
+    readonly attacker: Player;
+    readonly defender: Player;
+
+    readonly capturedTerritory: Territory
+
+    description(): string {
+        return `${this.attacker?.name} captured ${this.capturedTerritory?.name} from ${this.defender?.name}`;
     }
 }
 class GameMoveDeclineToJoinAGame extends GameMove { 
@@ -153,32 +180,70 @@ class GameMoveDeclineToJoinAGame extends GameMove {
 class GameMoveEliminatePlayer extends GameMove { 
     constructor(data: any, game: Game) {
         super(data, game);
+
+        this.attacker = game.players.get(data.s);
+        this.defender = game.players.get(data.es);
+    }
+
+    readonly attacker: Player;
+    readonly defender: Player;
+
+    description(): string {
+        return `${this.attacker?.name} eliminated ${this.defender?.name}`;
     }
 }
 class GameMoveTransfer extends GameMove { 
     constructor(data: any, game: Game) {
         super(data, game);
 
+        this.player = game.players.get(data.s);
         this.units = Number(data.num);
 
         this.fromTerritory = game.map.territories.get(data.fcid);
         this.toTerritory = game.map.territories.get(data.tcid);
     }
 
+    readonly player: Player;
     readonly units: number;
 
     readonly fromTerritory: Territory;
     readonly toTerritory: Territory;
+
+    description(): string {
+        return `${this.player?.name} transfered ${this.units} from ${this.fromTerritory?.name} to ${this.toTerritory?.name}`;
+    }
 }
 class GameMoveAwardedCard extends GameMove { 
     constructor(data: any, game: Game) {
         super(data, game);
+
+        this.player = game.players.get(data.s);
+    }
+
+    readonly player: Player;
+
+    description(): string {
+        return `${this.player?.name} was awarded a card`;
     }
 }
 class GameMoveCaptureCards extends GameMove { 
     constructor(data: any, game: Game) {
         super(data, game);
+
+        this.attacker = game.players.get(data.s);
+        this.defender = game.players.get(data.ds);
+        this.cardsCapturedCount = Number(data.num);
     }
+
+    readonly attacker: Player;
+    readonly defender: Player;
+
+    readonly cardsCapturedCount: number;
+
+    description(): string {
+        return `${this.attacker?.name} captured ${this.cardsCapturedCount} cards from ${this.defender?.name}`;
+    }
+
 }
 class GameMoveCaptureReserveUnits extends GameMove { 
     constructor(data: any, game: Game) {
@@ -188,6 +253,14 @@ class GameMoveCaptureReserveUnits extends GameMove {
 class GameMoveJoinGame extends GameMove { 
     constructor(data: any, game: Game) {
         super(data, game);
+
+        this.player = game.players.get(data.s);
+    }
+
+    readonly player: Player;
+
+    description(): string {
+        return `${this.player?.name} joined`;
     }
 }
 class GameMoveSeatOrderForBlindAtOnceRound extends GameMove { 
@@ -203,6 +276,16 @@ class GameMoveBlindTerritorySelect extends GameMove {
 class GameMoveMessage extends GameMove { 
     constructor(data: any, game: Game) {
         super(data, game);
+
+        this.player = game.players.get(data.s);
+        this.message = data._content;
+    }
+
+    readonly player: Player
+    readonly message: string
+
+    description(): string {
+        return `${this.player?.name} post message "${this.message}"`
     }
 }
 class GameMoveCreateNewGame extends GameMove { 
@@ -213,11 +296,33 @@ class GameMoveCreateNewGame extends GameMove {
 class GameMoveAssignSeatPosition extends GameMove { 
     constructor(data: any, game: Game) {
         super(data, game);
+
+        this.player = game.players.get(data.s);
+        this.position = Number(data.s);
+    }
+
+    readonly player: Player;
+    readonly position: number;
+
+    description(): string {
+        return `${this.player?.name} is in position ${this.position}`;
     }
 }
 class GameMovePlaceUnit extends GameMove { 
     constructor(data: any, game: Game) {
         super(data, game);
+
+        this.player = game.players.get(data.s);
+        this.territory = game.map.territories.get(data.cid);
+        this.units = Number(data.num);
+    }
+
+    readonly player: Player;
+    readonly territory: Territory;
+    readonly units: number;
+
+    description(): string {
+        return `${this.player?.name} placed ${this.units} units on ${this.territory?.name}`
     }
 }
 class GameMoveBlindAtOnceTransfer extends GameMove { 
@@ -229,20 +334,48 @@ class GameMoveReshuffleCards extends GameMove {
     constructor(data: any, game: Game) {
         super(data, game);
     }
+
+    description(): string {
+        return `cards re-shuffled`
+    }
 }
 class GameMoveStartGame extends GameMove { 
     constructor(data: any, game: Game) {
         super(data, game);
     }
+
+    description(): string {
+        return `start game`;
+    }
 }
 class GameMoveSelectTerritory extends GameMove { 
     constructor(data: any, game: Game) {
         super(data, game);
+
+        this.player = game.players.get(data.s);
+        this.territory = game.map.territories.get(data.cid);
+    }
+
+    readonly player: Player;
+    readonly territory: Territory;
+
+    description(): string {
+        return `${this.player?.name} selected ${this.territory?.name}`
     }
 }
 class GameMoveUseCards extends GameMove { 
     constructor(data: any, game: Game) {
         super(data, game);
+
+        this.player = game.players.get(data.s);
+        this.units = Number(data.num);
+    }
+
+    readonly player: Player;
+    readonly units: number;
+
+    description(): string {
+        return `${this.player?.name} used cards and received ${this.units} units`;
     }
 }
 class GameMoveBlindAtOnceAttack extends GameMove { 
@@ -253,16 +386,42 @@ class GameMoveBlindAtOnceAttack extends GameMove {
 class GameMoveWin extends GameMove { 
     constructor(data: any, game: Game) {
         super(data, game);
+
+        this.winner = game.players.get(data.s);
+    }
+
+    readonly winner: Player;
+
+    description(): string {
+        return `${this.winner?.name} won`;
     }
 }
 class GameMoveTerritorySelectedAsNeutral extends GameMove { 
     constructor(data: any, game: Game) {
         super(data, game);
+
+        this.territory = game.map.territories.get(data.cid);
+    }
+
+    readonly territory: Territory
+
+    description(): string {
+        return `${this.territory?.name} is neutral territory`
     }
 }
 class GameMoveBonusUnits extends GameMove { 
     constructor(data: any, game: Game) {
         super(data, game);
+
+        this.player = game.players.get(data.s);
+        this.units = Number(data.num);
+    }
+
+    readonly player: Player;
+    readonly units: number;
+
+    description(): string {
+        return `${this.player.name} was awarded ${this.units} units`
     }
 }
 class GameMoveSurrender extends GameMove { 

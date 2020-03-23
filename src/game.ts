@@ -1,4 +1,4 @@
-import { getDetails, getHistory } from './api';
+import { getDetails, getHistory, getState } from './api';
 import { GameMove } from './moves';
 
 export class Rules {
@@ -113,6 +113,16 @@ function loadMapWithBoardData(map: GameMap, data: any) {
     })
 }
 
+export class Player {
+    constructor(data: any) {
+        this.id = data.id
+        this.name = data.name;
+    } 
+
+    readonly id: string;
+    readonly name: string;
+}
+
 export class Game {
 
     static async ForId(gameId: string): Promise<Game> {
@@ -130,6 +140,7 @@ export class Game {
     readonly map: GameMap;
 
     readonly moves = new Array<GameMove>();
+    readonly players = new Map<string, Player>();
 
     private async load() {
         const details = await getDetails(this.id);
@@ -147,13 +158,18 @@ export class Game {
         loadMapWithBoardData(this.map, details.board);
         delete details.board;
 
+        const gameStateData = await getState(this.id);
+        const players = (gameStateData.players._content.player || []).map((p) => new Player(p));
+        players.forEach((p) => this.players.set(p.id, p));
+
         const history = await getHistory(this.id);
-        console.dir(history, { depth: null });
+        // console.dir(history, { depth: null });
 
         const moves = history.moves.map((m) => {
-            console.dir(m);
+            // console.dir(m);
             const move = GameMove.FromData(m, this);
-            console.dir(move);
+            // console.dir(move);
+            console.log(move?.description());
             return move;
         });
         this.moves.push(...moves);
