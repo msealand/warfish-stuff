@@ -2,6 +2,9 @@
 import { getHistory, getState, getDetails } from './api';
 // import { getData } from './units';
 
+import { resolve } from 'path';
+import { existsSync, readFileSync, writeFileSync, mkdirSync, fstat } from 'fs';
+
 import { Game } from './game';
 import { drawMap } from './drawMap';
 
@@ -35,7 +38,37 @@ async function go() {
     // console.dir(game.map, { depth: 4 });
     // console.log();
 
-    drawMap(game, game.moves[500]);
+
+    const cachePath = resolve(process.env["CACHE_PATH"] || 'cache');
+    if (!existsSync(cachePath)) {
+        mkdirSync(cachePath);
+    }    
+
+    const gameDir = resolve(cachePath, game.id);
+    if (!existsSync(gameDir)) {
+        mkdirSync(gameDir);
+    }
+
+    const imageData = await drawMap(game);
+    const imagePath = resolve(gameDir, `map.png`);
+    writeFileSync(imagePath, imageData);
+    console.log(`saved map to: ${imagePath}`);
+
+    // let n = 0;
+    // for (let idx = 0; idx < game.moves.length; idx++) {
+    //     const move = game.moves[idx];   
+    //     if (move?.apply()) {
+    //         console.log(move.description());
+
+    //         const imageData = await drawMap(game);
+    //         if (imageData) {
+    //             const imagePath = resolve(gameDir, "moves", `${n}.png`);
+    //             writeFileSync(imagePath, imageData);
+    //             console.log(`saved map to: ${imagePath}`);
+    //             n++;
+    //         }
+    //     }
+    // }
 }
 
 go();

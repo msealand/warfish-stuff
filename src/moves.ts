@@ -116,6 +116,8 @@ export class GameMove {
     description(): string {
         return `${this.constructor.name} ${JSON.stringify(this)}`;
     }
+
+    apply(): boolean { return false; }
 }
 
 export class GameMoveAttack extends GameMove { 
@@ -148,6 +150,12 @@ export class GameMoveAttack extends GameMove {
     description(): string {
         return `${this.attacker?.name} in ${this.fromTerritory?.name} attacked ${this.defender?.name} in ${this.toTerritory?.name} and lost ${this.attackerLosses} units; ${this.defender?.name} lost ${this.defenderLosses} units`;
     }
+
+    apply(): boolean { 
+        this.fromTerritory.units -= this.attackerLosses;
+        this.toTerritory.units -= this.defenderLosses;
+        return true;
+    }
 }
 export class GameMoveEliminatePlayerBonusUnits extends GameMove { 
     constructor(data: any, game: Game) {
@@ -170,6 +178,11 @@ export class GameMoveCaptureTerritory extends GameMove {
 
     description(): string {
         return `${this.attacker?.name} captured ${this.capturedTerritory?.name} from ${this.defender?.name}`;
+    }
+
+    apply() {
+        this.capturedTerritory.controlledBy = this.attacker;
+        return true;
     }
 }
 export class GameMoveDeclineToJoinAGame extends GameMove { 
@@ -211,6 +224,12 @@ export class GameMoveTransfer extends GameMove {
 
     description(): string {
         return `${this.player?.name} transfered ${this.units} from ${this.fromTerritory?.name} to ${this.toTerritory?.name}`;
+    }
+
+    apply(): boolean { 
+        this.fromTerritory.units -= this.units;
+        this.toTerritory.units += this.units;
+        return true;
     }
 }
 export class GameMoveAwardedCard extends GameMove { 
@@ -324,6 +343,11 @@ export class GameMovePlaceUnit extends GameMove {
     description(): string {
         return `${this.player?.name} placed ${this.units} units on ${this.territory?.name}`
     }
+
+    apply(): boolean { 
+        this.territory.units += this.units;
+        return true;
+    }
 }
 export class GameMoveBlindAtOnceTransfer extends GameMove { 
     constructor(data: any, game: Game) {
@@ -361,6 +385,12 @@ export class GameMoveSelectTerritory extends GameMove {
 
     description(): string {
         return `${this.player?.name} selected ${this.territory?.name}`
+    }
+
+    apply() {
+        this.territory.controlledBy = this.player;
+        this.territory.units = 1;
+        return true;
     }
 }
 export class GameMoveUseCards extends GameMove { 
@@ -407,6 +437,11 @@ export class GameMoveTerritorySelectedAsNeutral extends GameMove {
 
     description(): string {
         return `${this.territory?.name} is neutral territory`
+    }
+
+    apply(): boolean { 
+        this.territory.units = 3;
+        return true;
     }
 }
 export class GameMoveBonusUnits extends GameMove { 

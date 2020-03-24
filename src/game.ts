@@ -28,14 +28,17 @@ export class Territory {
 
     readonly borderingTerritories = new Set<Territory>();
 
-    continent: Continent;
+    groups = new Array<TerritoryGroup>();
+
+    controlledBy: Player;
+    units: number = 0;
 
     addBorderingTerritory(territory: Territory) {
         this.borderingTerritories.add(territory);
     }
 }
 
-export class Continent {
+export class TerritoryGroup {
     constructor(data: any) {
         this.id = data.id;
         this.name = data.name;
@@ -54,10 +57,8 @@ export class Continent {
 
     addTerritory(territory: Territory) {
         this.territories.add(territory);
-
-        if (!territory.continent || (territory.continent.territoryCount > this.territoryCount)) {
-            territory.continent = this;
-        }
+        territory.groups.push(this);
+        territory.groups = territory.groups.sort((a, b) => a.territoryCount - b.territoryCount);
     }
 }
 
@@ -110,12 +111,12 @@ export class GameMap {
         });
 
         continentData.forEach((data) => {
-            const continent = new Continent(data);
+            const group = new TerritoryGroup(data);
             const cids = data.cids.split(',');
             cids.forEach((cid) => {
-                continent.addTerritory(this.territories.get(cid));
+                group.addTerritory(this.territories.get(cid));
             });
-            this.continents.set(continent.id, continent);
+            this.groups.set(group.id, group);
         });
     }
 
@@ -123,7 +124,7 @@ export class GameMap {
     readonly height: number;
 
     readonly territories = new Map<string, Territory>();
-    readonly continents = new Map<string, Continent>();
+    readonly groups = new Map<string, TerritoryGroup>();
 
     readonly colors = new Map<string, GameColor>();
 }

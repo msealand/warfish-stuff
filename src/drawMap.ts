@@ -10,20 +10,12 @@ const WRAP_DELTA_PERCENT = 0.5;
 
 export async function drawMap(game: Game, move?: GameMove) {
 
+    if (move && !(move instanceof GameMoveAttack)) { return }
+
     const cachePath = resolve(process.env["CACHE_PATH"] || 'cache');
     if (!existsSync(cachePath)) {
         mkdirSync(cachePath);
-    }    
-
-    const gameDir = resolve(cachePath, game.id);
-    if (!existsSync(gameDir)) {
-        mkdirSync(gameDir);
     }
-
-    const imagePath = resolve(gameDir, "map.png");
-
-    // console.dir(game.map, { depth: 1 });
-    // console.log();
 
     const canvas = createCanvas(game.map.width, game.map.height);
     const ctx = canvas.getContext('2d')
@@ -37,14 +29,21 @@ export async function drawMap(game: Game, move?: GameMove) {
     const wrapDeltaWidth = (game.map.width * WRAP_DELTA_PERCENT);
     const wrapDeltaHeight = (game.map.height * WRAP_DELTA_PERCENT);
 
-    let hue = 0.0;
+    let idx = 0;
     let saturation1 = '100%';
     let saturation2 = '50%';
-    const hDelta = 360.0 / game.map.continents.size;
-    game.map.continents.forEach((continent) => {
-        hue = Math.round(hue + hDelta);
-        (continent as any).color = `hsl(${hue}, ${saturation1}, 70%)`;
-        (continent as any).backgroundColor = `hsla(${hue}, ${saturation2}, 50%, 0.3)`;
+    game.map.groups.forEach((group) => {
+        // console.log(group.name);
+
+        // if (group.name == "Islam") {
+            const hue = idx * 137.508;
+            (group as any).color = `hsl(${hue}, ${saturation1}, 70%)`;
+            (group as any).backgroundColor = `hsla(${hue}, ${saturation2}, 25%, 1.0)`;
+            idx++;
+        // } else {
+        //     (group as any).color = `hsl(0, 0%, 40%)`;
+        //     (group as any).backgroundColor = `hsl(0, 0%, 25%)`;
+        // }
     });
 
     ctx.save();
@@ -69,8 +68,8 @@ export async function drawMap(game: Game, move?: GameMove) {
             }
 
             const gradient = ctx.createLinearGradient(pos.x, pos.y, otherPos.x, otherPos.y);
-            gradient.addColorStop(0, (territory.continent as any).color);
-            gradient.addColorStop(1, (otherTerritory.continent as any).color);
+            gradient.addColorStop(0, (territory.groups[0] as any).color);
+            gradient.addColorStop(1, (otherTerritory.groups[0] as any).color);
             ctx.strokeStyle = gradient;
             ctx.lineWidth = 1.0;
 
@@ -84,30 +83,46 @@ export async function drawMap(game: Game, move?: GameMove) {
 
     game.map.territories.forEach((territory) => {
         const pos = territory.position;
+        let radius = 9;//Math.min(Math.max(Math.log10(territory.units + 1) * 12, 0), 24); // 9
 
-        if (move instanceof GameMoveAttack) {
-            if (territory.id == move.fromTerritory.id) {
-                ctx.fillStyle = move.attacker.color?.cssColor() ?? 'red';
-            } else if (territory.id == move.toTerritory.id) {
-                ctx.fillStyle = move.defender.color?.cssColor() ?? 'blue';
-            } else {
-                ctx.fillStyle = 'rgb(64,64,64)'
-            }
-        } else {
-            ctx.fillStyle = (territory.continent as any).backgroundColor;
-        }
-        ctx.strokeStyle = (territory.continent as any).color;
+        // if (move instanceof GameMoveAttack) {
+        //     if (territory.id == move.fromTerritory.id) {
+        //         ctx.fillStyle = move.attacker.color?.cssColor() ?? 'red';
+        //     } else if (territory.id == move.toTerritory.id) {
+        //         ctx.fillStyle = move.defender?.color?.cssColor() ?? 'rgb(255,255,255)';
+        //     } else {
+        //         ctx.fillStyle = 'rgb(64,64,64)'
+        //     }
+        // } else {
+        //    ctx.fillStyle = (territory.groups[0] as any).backgroundColor;
+        // }
 
-        ctx.lineWidth = 1.5;
+        ctx.fillStyle = territory.controlledBy?.color?.cssColor() ?? 'rgb(64,64,64)';
+        ctx.strokeStyle = 'black';//(territory.groups[0] as any).color;//territory.controlledBy?.color?.cssColor() ?? 'rgb(64,64,64)';
+
+        // ctx.fillStyle = (territory.groups[0] as any).backgroundColor;
+        // ctx.strokeStyle = (territory.groups[0] as any).color;
+
+
+        ctx.lineWidth = 1.0
 
         ctx.beginPath();
-        ctx.arc(pos.x, pos.y, 9, 0, 2 * Math.PI, false);
+        ctx.arc(pos.x, pos.y, radius, 0, 2 * Math.PI, false);
         ctx.fill();
         ctx.stroke();
+
+        // radius += 3.0;
+        // territory.groups.slice(1).forEach((group) => {
+        //     ctx.strokeStyle = (group as any).color;
+        //     ctx.lineWidth = 2.0;
+        //     ctx.beginPath();
+        //     ctx.arc(pos.x, pos.y, radius, 0, 2 * Math.PI, false);
+        //     ctx.stroke();
+
+        //     radius += 3.0;
+        // })
     })
 
     const imageData = canvas.toBuffer();
-    writeFileSync(imagePath, imageData);
-
-    console.log(`saved map to: ${imagePath}`);
+    return imageData;
 }
