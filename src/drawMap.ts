@@ -97,11 +97,11 @@ export async function drawMap(game: Game, move?: GameMove) {
         //    ctx.fillStyle = (territory.groups[0] as any).backgroundColor;
         // }
 
-        ctx.fillStyle = territory.controlledBy?.color?.cssColor() ?? 'rgb(64,64,64)';
-        ctx.strokeStyle = 'black';//(territory.groups[0] as any).color;//territory.controlledBy?.color?.cssColor() ?? 'rgb(64,64,64)';
+        // ctx.fillStyle = territory.controlledBy?.color?.cssColor() ?? 'rgb(64,64,64)';
+        // ctx.strokeStyle = 'black';//(territory.groups[0] as any).color;//territory.controlledBy?.color?.cssColor() ?? 'rgb(64,64,64)';
 
-        // ctx.fillStyle = (territory.groups[0] as any).backgroundColor;
-        // ctx.strokeStyle = (territory.groups[0] as any).color;
+        ctx.fillStyle = (territory.groups[0] as any).backgroundColor;
+        ctx.strokeStyle = (territory.groups[0] as any).color;
 
 
         ctx.lineWidth = 1.0

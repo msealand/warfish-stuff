@@ -151,6 +151,22 @@ ${this.defender?.name ?? "Neutral Territory"} lost ${this.defenderLosses} units`
             fromTerritoryState.unitCount -= unitsToTransfer;
         }
 
+        const attackerState = newGameState.getPlayerState(this.attacker);
+        attackerState.attacks += this.attackerUnits;
+        attackerState.losses += this.attackerLosses;
+        attackerState.wins += this.defenderLosses;
+        this.attackerDice.forEach((d) => {
+            attackerState.attackDiceCounts[d-1]++;
+        })
+
+        const defenderState = newGameState.getPlayerState(this.defender);
+        defenderState.defends += this.defenderUnits;
+        defenderState.losses += this.defenderLosses;
+        defenderState.wins += this.attackerLosses;
+        this.defenderDice.forEach((d) => {
+            defenderState.defenceDiceCounts[d-1]++;
+        })
+
         return newGameState;
     }
 }
@@ -179,15 +195,21 @@ export class GameMoveCaptureTerritory extends GameMove {
         return `${this.attacker?.name} captured ${this.capturedTerritory?.name} from ${this.defender?.name}`;
     }
 
-    // This actually happens in the attack move
-    // apply(previousSate?: GameState): GameState { 
-    //     const newGameState = super.apply(previousSate);
+    // Unit transfer happens in the attack move
+    apply(previousSate?: GameState): GameState { 
+        const newGameState = super.apply(previousSate);
 
-    //     const fromTerritoryState = newGameState.getTerritoryState(this.capturedTerritory);
-    //     fromTerritoryState.controlledBy = this.attacker;
+        const fromTerritoryState = newGameState.getTerritoryState(this.capturedTerritory);
+        fromTerritoryState.controlledBy = this.attacker;
         
-    //     return newGameState;
-    // }
+        const attackerState = newGameState.getPlayerState(this.attacker);
+        attackerState.territoriesWon++;
+
+        const defenderState = newGameState.getPlayerState(this.defender);
+        defenderState.territoriesLost++;
+
+        return newGameState;
+    }
 }
 
 export class GameMoveDeclineToJoinAGame extends GameMove { 

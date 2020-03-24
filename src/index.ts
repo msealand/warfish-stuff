@@ -31,8 +31,16 @@ async function go() {
     const game = await Game.ForId(gameId);
     // console.log(game.stateAfterMove(500)?.move?.description());
 
-    game.currentState?.territoryStates.forEach((state, territory) => {
-        console.log(`${territory.name} is controlled by ${state.controlledBy?.name ?? "nobody"} with ${state.unitCount ?? 0} units`);
+    // console.log()
+    // game.currentState?.territoryStates.forEach((state, territory) => {
+    //     console.log(`${territory.name} is controlled by ${state.controlledBy?.name ?? "nobody"} with ${state.unitCount ?? 0} units`);
+    // })
+
+    console.log()
+    game.currentState?.playerStates.forEach((state, player) => {
+        console.log(`${player?.name ?? "Neutral Territory"}:`);
+        console.dir(state);
+        console.log();
     })
 
     console.log()
@@ -47,20 +55,20 @@ async function go() {
     // console.log();
 
 
-    // const cachePath = resolve(process.env["CACHE_PATH"] || 'cache');
-    // if (!existsSync(cachePath)) {
-    //     mkdirSync(cachePath);
-    // }    
+    const cachePath = resolve(process.env["CACHE_PATH"] || 'cache');
+    if (!existsSync(cachePath)) {
+        mkdirSync(cachePath);
+    }    
 
-    // const gameDir = resolve(cachePath, game.id);
-    // if (!existsSync(gameDir)) {
-    //     mkdirSync(gameDir);
-    // }
+    const gameDir = resolve(cachePath, game.id);
+    if (!existsSync(gameDir)) {
+        mkdirSync(gameDir);
+    }
 
-    // const imageData = await drawMap(game);
-    // const imagePath = resolve(gameDir, `map.png`);
-    // writeFileSync(imagePath, imageData);
-    // console.log(`saved map to: ${imagePath}`);
+    const imageData = await drawMap(game);
+    const imagePath = resolve(gameDir, `map.png`);
+    writeFileSync(imagePath, imageData);
+    console.log(`saved map to: ${imagePath}`);
 
     // let n = 0;
     // for (let idx = 0; idx < game.moves.length; idx++) {
