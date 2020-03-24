@@ -4,12 +4,16 @@ import { resolve } from 'path';
 import { existsSync, mkdirSync } from 'fs';
 
 import { Game } from "./game/Game";
+import { GameMoveAttack } from './game/GameMoves';
 
 const WRAP_DELTA_PERCENT = 0.5;
 
 export async function drawMap(game: Game, moveIdx?: number) {
 
     const isDrawingMove = (moveIdx !== undefined);
+    const gameState = game.stateAfterMove(moveIdx);
+
+    console.log(`drawing state: ${gameState?.move?.description() ?? 'current'}`);
 
     const cachePath = resolve(process.env["CACHE_PATH"] || 'cache');
     if (!existsSync(cachePath)) {
@@ -48,54 +52,74 @@ export async function drawMap(game: Game, moveIdx?: number) {
         idx++;
     });
 
-    if (!isDrawingMove || !backgroundImageExists) {
-        ctx.save();
-        ctx.globalAlpha = 0.6;
-        game.map.territories.forEach((territory) => {
-            const pos = territory.position;
+    ctx.save();
+    ctx.globalAlpha = 0.6;
+    game.map.territories.forEach((territory) => {
+        const pos = territory.position;
 
-            territory.borderingTerritories.forEach((otherTerritory) => {
-                const otherPos = Object.assign({}, otherTerritory.position);
+        territory.borderingTerritories.forEach((otherTerritory) => {
+            const otherPos = Object.assign({}, otherTerritory.position);
 
-                // If the points are > WRAP_DELTA appart, assume it needs to wrap
-                const xDelta = Math.abs(pos.x - otherPos.x);
-                if (xDelta > wrapDeltaWidth) {
-                    if (pos.x > otherPos.x) { otherPos.x += (xDelta * 2.0) }
-                    else { otherPos.x -= (xDelta * 2.0) }
-                } 
+            // If the points are > WRAP_DELTA appart, assume it needs to wrap
+            const xDelta = Math.abs(pos.x - otherPos.x);
+            if (xDelta > wrapDeltaWidth) {
+                if (pos.x > otherPos.x) { otherPos.x += (xDelta * 2.0) }
+                else { otherPos.x -= (xDelta * 2.0) }
+            } 
 
-                const yDelta = Math.abs(pos.y - otherPos.y);
-                if (yDelta > wrapDeltaHeight) {
-                    if (pos.y > otherPos.y) { otherPos.y += (yDelta * 2.0) }
-                    else { otherPos.y -= (yDelta * 2.0) }
+            const yDelta = Math.abs(pos.y - otherPos.y);
+            if (yDelta > wrapDeltaHeight) {
+                if (pos.y > otherPos.y) { otherPos.y += (yDelta * 2.0) }
+                else { otherPos.y -= (yDelta * 2.0) }
+            }
+
+            if (isDrawingMove) {
+                if ((gameState.move instanceof GameMoveAttack) && 
+                        ((gameState.move.fromTerritory.id == territory.id &&
+                        gameState.move.toTerritory.id == otherTerritory.id) ||
+                        (gameState.move.fromTerritory.id == otherTerritory.id &&
+                        gameState.move.toTerritory.id == territory.id))
+                ) {
+                    ctx.strokeStyle = gameState.move.attacker.color.cssRGBColor();
+                    ctx.lineWidth = 3.0
+                } else {
+                    ctx.strokeStyle = `rgb(128,128,128)`
+                    ctx.lineWidth = 1.0
                 }
-
+            } else {
                 const gradient = ctx.createLinearGradient(pos.x, pos.y, otherPos.x, otherPos.y);
                 gradient.addColorStop(0, (territory.groups[0] as any).color);
                 gradient.addColorStop(1, (otherTerritory.groups[0] as any).color);
                 ctx.strokeStyle = gradient;
                 ctx.lineWidth = 1.0;
+            }
 
-                ctx.beginPath();
-                ctx.moveTo(pos.x, pos.y);
-                ctx.lineTo(otherPos.x, otherPos.y);
-                ctx.stroke();
-            })
+            ctx.beginPath();
+            ctx.moveTo(pos.x, pos.y);
+            ctx.lineTo(otherPos.x, otherPos.y);
+            ctx.stroke();
         })
-        ctx.restore();
-    }
-
-    const gameState = game.stateAfterMove(moveIdx);
+    })
+    ctx.restore();
 
     game.map.territories.forEach((territory) => {
         const state = gameState?.getTerritoryState(territory);
         const pos = territory.position;
         let radius = isDrawingMove ? Math.min(Math.max(Math.log10(state.unitCount + 1) * 12, 0), 24) : 9;
 
-        ctx.lineWidth = 1.0
+        ctx.lineWidth = 1.5
 
         if (isDrawingMove) {
-            ctx.fillStyle = state.controlledBy?.color?.cssColor() ?? 'rgb(64,64,64)';
+            if (state.controlledBy) {
+                const { h, s, l } = state.controlledBy.color.hsl();
+                ctx.strokeStyle = `hsl(${h}, ${s * 100.0}%, 70%)`;
+                ctx.fillStyle = `hsl(${h}, ${s * 100.0}%, 25%)`;
+            } else {
+                ctx.strokeStyle = `hsl(0, 0%, 50%)`;
+                ctx.fillStyle = `hsl(0, 0%, 0%)`;
+            }
+
+            // ctx.fillStyle = state.controlledBy?.color?.cssRGBColor() ?? 'rgb(64,64,64)';
 
             // if (gameState.move instanceof GameMoveAttack) {
             //     if (territory == gameState.move.fromTerritory) {
@@ -108,7 +132,7 @@ export async function drawMap(game: Game, moveIdx?: number) {
             //         ctx.strokeStyle = 'black';
             //     }
             // } else {
-                ctx.strokeStyle = 'black';
+                // ctx.strokeStyle = 'black';
             // }
         } else {
             ctx.fillStyle = (territory.groups[0] as any).backgroundColor;

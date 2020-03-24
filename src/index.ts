@@ -79,6 +79,7 @@ async function go() {
 
     {
         const imageData = await drawMap(game, Number(game.currentState.move.id));
+        // const imageData = await drawMap(game, 500);
         const imagePath = resolve(gameDir, `current.png`);
         writeFileSync(imagePath, imageData);
         console.log(`saved current state to: ${imagePath}`);
