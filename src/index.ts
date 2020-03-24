@@ -65,24 +65,34 @@ async function go() {
         mkdirSync(gameDir);
     }
 
-    const imageData = await drawMap(game);
-    const imagePath = resolve(gameDir, `map.png`);
-    writeFileSync(imagePath, imageData);
-    console.log(`saved map to: ${imagePath}`);
+    const movesDir = resolve(gameDir, 'moves');
+    if (!existsSync(movesDir)) {
+        mkdirSync(movesDir);
+    }
+
+    {
+        const imageData = await drawMap(game);
+        const imagePath = resolve(gameDir, `map.png`);
+        writeFileSync(imagePath, imageData);
+        console.log(`saved map to: ${imagePath}`);
+    }
+
+    {
+        const imageData = await drawMap(game, Number(game.currentState.move.id));
+        const imagePath = resolve(gameDir, `current.png`);
+        writeFileSync(imagePath, imageData);
+        console.log(`saved current state to: ${imagePath}`);
+    }
 
     // let n = 0;
-    // for (let idx = 0; idx < game.moves.length; idx++) {
-    //     const move = game.moves[idx];   
-    //     if (move?.apply()) {
-    //         console.log(move.description());
-
-    //         const imageData = await drawMap(game);
-    //         if (imageData) {
-    //             const imagePath = resolve(gameDir, "moves", `${n}.png`);
-    //             writeFileSync(imagePath, imageData);
-    //             console.log(`saved map to: ${imagePath}`);
-    //             n++;
-    //         }
+    // for (let idx = 0; idx < game.history.length; idx++) {
+    // // for (let idx = 500; idx < 600; idx++) {
+    //     const imageData = await drawMap(game, idx);
+    //     if (imageData) {
+    //         const imagePath = resolve(gameDir, "moves", `${n}.png`);
+    //         writeFileSync(imagePath, imageData);
+    //         console.log(`saved map to: ${imagePath}`);
+    //         n++;
     //     }
     // }
 }

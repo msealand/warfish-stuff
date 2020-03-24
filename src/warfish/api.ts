@@ -39,19 +39,27 @@ export async function getHistory(gameId: string) {
 }
 
 export async function getState(gameId: string) {
-    return await call(gameId, `services/rest`, {
+    const data = await call(gameId, `services/rest`, {
         gid: gameId,
         _method: 'warfish.tables.getState',
         sections: `cards,board,details,players`,
         _format: 'json'
     });
+
+    // console.dir(data, { depth: null });
+
+    return data;
 }
 
 export async function getDetails(gameId: string) {
-    return await call(gameId, `services/rest`, {
+    const data = await call(gameId, `services/rest`, {
         gid: gameId,
         _method: 'warfish.tables.getDetails',
         sections: `board,continents,rules,map`,
         _format: 'json'
     }, 'details.json');
+
+    // console.dir(data, { depth: null });
+
+    return data;
 }

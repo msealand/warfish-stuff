@@ -13,6 +13,8 @@ function loadMapWithBoardData(map: GameMap, data: any) {
     delete cleanData._content;
     Object.assign(cleanData, data._content);
 
+    map.boardId = cleanData.boardid;
+
     const borders = cleanData.border;
     borders.forEach((border) => {
         const territoryA = map.territories.get(border.a);
