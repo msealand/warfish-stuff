@@ -75,14 +75,7 @@ export class Game {
         history.moves.forEach((m) => {
             const move = GameMove.FromData(m, this);
             if (move) {
-                // It's possible to get duplicates in the history data, so check to make sure this isn't the same as the last one
-                if (this.currentState?.move?.id == move.id) {
-                    console.log(`Duplicate move at ${move.id}; ignoring`);
-                    return;
-                }
-
                 const state = move.apply(this.currentState);
-
                 this.assertValidState();
                 this.history.push(state);
             }

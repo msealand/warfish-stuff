@@ -3,7 +3,7 @@ import { readCache, writeCache } from '../cache';
 
 async function _getHistory(gameId: string, start: number = 0, count: number = 1500) {
     if (start == -1) console.log(`getting last move`);
-    else console.log(`getting moves ${start} - ${start + count}`);
+    else console.log(`getting moves ${start} - ${start + count - 1}`);
 
     return await call(gameId, `services/rest`, {
         gid: gameId,
@@ -15,13 +15,13 @@ async function _getHistory(gameId: string, start: number = 0, count: number = 15
 }
 
 export async function getHistory(gameId: string) {
-    const history = JSON.parse((await readCache(gameId, "history.json")) ?? `{ "lastMove": 0, "moves": [] }`);
+    const history = JSON.parse((await readCache(gameId, "history.json")) ?? `{ "lastMove": -1, "moves": [] }`);
     const lastMoveData = await _getHistory(gameId, -1, 1);
     const totalMoves = Number(lastMoveData.movelog.total) - 1;
 
     if (totalMoves > history.lastMove) {
         const count = Math.min((totalMoves - history.lastMove) + 1, 1500);
-        const newHistory = await _getHistory(gameId, history.lastMove, count);
+        const newHistory = await _getHistory(gameId, history.lastMove + 1, count);
         const newMoves = (newHistory.movelog._content.m || []).map((m) => {
             return Object.assign({}, m, { id: Number(m.id) });
         });
