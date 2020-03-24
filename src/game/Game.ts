@@ -3,6 +3,8 @@ import { GameMove } from './GameMoves';
 import { Rules } from './Rules';
 import { GameMap } from './GameMap';
 import { Player } from './Player';
+import { GameState, TerritoryState } from './GameState';
+import { Territory } from './Territory';
 
 function loadMapWithBoardData(map: GameMap, data: any) {
     const cleanData: any = {};
@@ -35,8 +37,18 @@ export class Game {
     readonly rules: Rules;
     readonly map: GameMap;
 
-    readonly moves = new Array<GameMove>();
     readonly players = new Map<string, Player>();
+    readonly history = new Array<GameState>();
+
+    stateAfterMove(moveIdx: number): GameState | undefined {
+        if (moveIdx < this.history.length) {
+            return this.history[moveIdx];
+        }
+    }
+
+    get currentState(): GameState | undefined {
+        return this.history.length ? this.history[this.history.length - 1] : undefined;
+    }
 
     private async load() {
         const details = await getDetails(this.id);
@@ -59,16 +71,65 @@ export class Game {
         players.forEach((p) => this.players.set(p.id, p));
 
         const history = await getHistory(this.id);
-        // console.dir(history, { depth: null });
 
-        const moves = history.moves.map((m) => {
-            // console.dir(m);
+        history.moves.forEach((m) => {
             const move = GameMove.FromData(m, this);
-            // console.dir(move);
-            console.log(move?.description());
-            return move;
-        });
-        this.moves.push(...moves);
+            if (move) {
+                // It's possible to get duplicates in the history data, so check to make sure this isn't the same as the last one
+                if (this.currentState?.move?.id == move.id) {
+                    console.log(`Duplicate move at ${move.id}; ignoring`);
+                    return;
+                }
+
+                const state = move.apply(this.currentState);
+
+                this.assertValidState();
+                this.history.push(state);
+            }
+        })
     }
 
+    // <Debugging Stuff>
+    private dumpHistoryOfTerritory(territory: Territory) {
+        let ps: TerritoryState;
+        this.history.forEach((h) => {
+            const ts = h.getTerritoryState(territory);
+            if (!ps || (ts.controlledBy != ps.controlledBy) || (ts.unitCount != ps.unitCount)) {
+                console.log(`${h.move.id}: ${h.move.description()}`);
+                console.log(`${territory.name}, controlled by ${ts.controlledBy?.name ?? "nobody"} has ${ts.unitCount} units`);
+                console.log();
+                ps = ts;
+            }
+        })
+    }
+
+    private assertValidState() {
+        const cs = this.currentState;
+        if (!cs) return;
+
+        cs.territoryStates.forEach((state, territory) => {
+            if ((state?.unitCount ?? 0) < 0) {
+                console.log();
+                console.log(`!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
+                console.log();
+
+                console.log(`INVALID STATE FROM MOVE (${cs.move.id})`);
+                console.log();
+                
+                console.log(cs.move.description());
+                console.log(`${territory.name}, controlled by ${state.controlledBy?.name ?? "nobody"} has ${state.unitCount} units`);
+                console.dir(cs.move, { depth: 1 }); 
+
+                console.log();
+                console.log(`History of ${territory.name}:`);
+                console.log();
+                this.dumpHistoryOfTerritory(territory);
+
+                console.log(`!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
+                console.log();
+                throw new Error('Invalid State');
+            }
+        });
+    }
+    // </Debugging Stuff>
 }

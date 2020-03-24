@@ -29,6 +29,12 @@ async function go() {
     // console.dir(data, { depth: null });
 
     const game = await Game.ForId(gameId);
+    // console.log(game.stateAfterMove(500)?.move?.description());
+    // console.log(game.currentState?.move?.description());
+
+    game.currentState?.territoryStates.forEach((state, territory) => {
+        console.log(`${territory.name} is controlled by ${state.controlledBy?.name ?? "nobody"} with ${state.unitCount ?? 0} units`);
+    })
 
     // console.log(`Rules:`);
     // console.dir(game.rules, { depth: null });

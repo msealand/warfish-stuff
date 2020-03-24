@@ -18,10 +18,8 @@ export class Territory {
     readonly position: Coordinate;
     readonly textPosition: Coordinate;
     readonly borderingTerritories = new Set<Territory>();
-    
+
     groups = new Array<TerritoryGroup>();
-    controlledBy: Player;
-    units: number = 0;
 
     addBorderingTerritory(territory: Territory) {
         this.borderingTerritories.add(territory);

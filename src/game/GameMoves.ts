@@ -1,6 +1,7 @@
 import { Game } from "./Game";
 import { Player } from "./Player";
 import { Territory } from "./Territory";
+import { GameState } from "./GameState";
 
 export enum GameAction {
     Attack = "a",
@@ -16,7 +17,7 @@ export enum GameAction {
     SeatOrderForBlindAtOnceRound = "k",
     BlindTerritorySelect = "l",
     Message = "m",
-    CreateNewGame = "m",
+    CreateNewGame = "n",
     AssignSeatPosition = "o",
     PlaceUnit = "p",
     BlindAtOnceTransfer = "q",
@@ -68,14 +69,18 @@ export class GameMove {
             case GameAction.Booted: return new GameMoveBooted(data, game);
             case GameAction.GameTerminated: return new GameMoveGameTerminated(data, game);
             case GameAction.TeamWin: return new GameMoveTeamWin(data, game);
+            default: { console.log(`Unknown move`); console.dir(data); }
         }
     }
 
     constructor(data: any, game: Game) {
         Object.assign(this, data);
 
+        this.id = data.id;
         this.date = new Date(data.t * 1000);
     }
+
+    readonly id: string;
 
     readonly action: GameAction;
     readonly date: Date;
@@ -84,7 +89,9 @@ export class GameMove {
         return `${this.constructor.name} ${JSON.stringify(this)}`;
     }
 
-    apply(): boolean { return false; }
+    apply(previousSate?: GameState): GameState { 
+        return new GameState(this, previousSate);
+    }
 }
 
 export class GameMoveAttack extends GameMove { 
@@ -93,39 +100,58 @@ export class GameMoveAttack extends GameMove {
 
         this.defender = game.players.get(data.ds);
         this.defenderDice = data.dd.split(',').map(Number);
+        this.defenderUnits = this.defenderDice.length // <-- really?
         this.defenderLosses = Number(data.dl);
 
         this.attacker = game.players.get(data.s);
         this.attackerDice = data.ad.split(',').map(Number);
+        this.attackerUnits = this.attackerDice.length; // <-- really?
         this.attackerLosses = Number(data.al);
 
         this.fromTerritory = game.map.territories.get(data.fcid);
         this.toTerritory = game.map.territories.get(data.tcid);
+        
+        // console.log(this.constructor.name);
+        // console.dir(data, { depth: null });
     }
 
     readonly defender: Player;
     readonly defenderDice: Array<number>;
+    readonly defenderUnits: number;
     readonly defenderLosses: number;
 
     readonly attacker: Player;
     readonly attackerDice: Array<number>;
+    readonly attackerUnits: number;
     readonly attackerLosses: number;
 
     readonly fromTerritory: Territory;
     readonly toTerritory: Territory;
 
     description(): string {
-        return `${this.attacker?.name} attcked ${this.defender?.name ?? "Neutral Territory"} (${this.toTerritory?.name} -> ${this.fromTerritory?.name})
+        return `${this.attacker?.name} attcked ${this.defender?.name ?? "Neutral Territory"} with ${this.attackerUnits} units (${this.toTerritory?.name} -> ${this.fromTerritory?.name})
 ${this.attacker?.name} lost ${this.attackerLosses} units
 ${this.defender?.name ?? "Neutral Territory"} lost ${this.defenderLosses} units`
-
-        // return `${this.attacker?.name} in ${this.fromTerritory?.name} attacked ${this.defender?.name} in ${this.toTerritory?.name} and lost ${this.attackerLosses} units; ${this.defender?.name} lost ${this.defenderLosses} units`;
     }
 
-    apply(): boolean { 
-        this.fromTerritory.units -= this.attackerLosses;
-        this.toTerritory.units -= this.defenderLosses;
-        return true;
+    apply(previousSate?: GameState): GameState { 
+        const newGameState = super.apply(previousSate);
+
+        const fromTerritoryState = newGameState.getTerritoryState(this.fromTerritory);
+        fromTerritoryState.unitCount -= this.attackerLosses;
+
+        const toTerritoryState = newGameState.getTerritoryState(this.toTerritory);
+        toTerritoryState.unitCount -= this.defenderLosses;
+
+        if (toTerritoryState.unitCount == 0) {
+            toTerritoryState.controlledBy = this.attacker;
+
+            const unitsToTransfer = (this.attackerUnits - this.attackerLosses);
+            toTerritoryState.unitCount = unitsToTransfer;
+            fromTerritoryState.unitCount -= unitsToTransfer;
+        }
+
+        return newGameState;
     }
 }
 
@@ -153,10 +179,15 @@ export class GameMoveCaptureTerritory extends GameMove {
         return `${this.attacker?.name} captured ${this.capturedTerritory?.name} from ${this.defender?.name}`;
     }
 
-    apply() {
-        this.capturedTerritory.controlledBy = this.attacker;
-        return true;
-    }
+    // This actually happens in the attack move
+    // apply(previousSate?: GameState): GameState { 
+    //     const newGameState = super.apply(previousSate);
+
+    //     const fromTerritoryState = newGameState.getTerritoryState(this.capturedTerritory);
+    //     fromTerritoryState.controlledBy = this.attacker;
+        
+    //     return newGameState;
+    // }
 }
 
 export class GameMoveDeclineToJoinAGame extends GameMove { 
@@ -202,10 +233,16 @@ export class GameMoveTransfer extends GameMove {
         return `${this.player?.name} transfered ${this.units} from ${this.fromTerritory?.name} to ${this.toTerritory?.name}`;
     }
 
-    apply(): boolean { 
-        this.fromTerritory.units -= this.units;
-        this.toTerritory.units += this.units;
-        return true;
+    apply(previousSate?: GameState): GameState { 
+        const newGameState = super.apply(previousSate);
+
+        const fromTerritoryState = newGameState.getTerritoryState(this.fromTerritory);
+        fromTerritoryState.unitCount -= this.units;
+
+        const toTerritoryState = newGameState.getTerritoryState(this.toTerritory);
+        toTerritoryState.unitCount += this.units;
+
+        return newGameState;
     }
 }
 
@@ -328,11 +365,15 @@ export class GameMovePlaceUnit extends GameMove {
 
     description(): string {
         return `${this.player?.name} placed ${this.units} units on ${this.territory?.name}`
-    }
+    }   
+    
+    apply(previousSate?: GameState): GameState { 
+        const newGameState = super.apply(previousSate);
 
-    apply(): boolean { 
-        this.territory.units += this.units;
-        return true;
+        const territoryState = newGameState.getTerritoryState(this.territory);
+        territoryState.unitCount += this.units;
+
+        return newGameState;
     }
 }
 
@@ -377,10 +418,14 @@ export class GameMoveSelectTerritory extends GameMove {
         return `${this.player?.name} selected ${this.territory?.name}`
     }
 
-    apply() {
-        this.territory.controlledBy = this.player;
-        this.territory.units = 1;
-        return true;
+    apply(previousSate?: GameState): GameState { 
+        const newGameState = super.apply(previousSate);
+
+        const territoryState = newGameState.getTerritoryState(this.territory);
+        territoryState.controlledBy = this.player;
+        territoryState.unitCount = 1;
+
+        return newGameState;
     }
 }
 
@@ -433,9 +478,13 @@ export class GameMoveTerritorySelectedAsNeutral extends GameMove {
         return `${this.territory?.name} is neutral territory`
     }
 
-    apply(): boolean { 
-        this.territory.units = 3;
-        return true;
+    apply(previousSate?: GameState): GameState { 
+        const newGameState = super.apply(previousSate);
+
+        const territoryState = newGameState.getTerritoryState(this.territory);
+        territoryState.unitCount = 3;
+
+        return newGameState;
     }
 }
 
