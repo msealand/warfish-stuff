@@ -1,10 +1,10 @@
 const { createCanvas, loadImage } = require('canvas');
 
 import { resolve } from 'path';
-import { existsSync, readFileSync, writeFileSync, mkdirSync, fstat } from 'fs';
+import { existsSync, mkdirSync } from 'fs';
 
-import { Game } from "./game";
-import { GameMove, GameMoveAttack } from './moves';
+import { Game } from "./game/Game";
+import { GameMove, GameMoveAttack } from './game/GameMoves';
 
 const WRAP_DELTA_PERCENT = 0.5;
 

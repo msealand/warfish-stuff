@@ -1,7 +1,7 @@
 import * as request from 'request-promise-native';
 import { resolve } from 'path';
 import { existsSync, readFileSync, mkdirSync } from 'fs';
-import { readCache, writeCache } from './cache';
+import { readCache, writeCache } from '../cache';
 
 const cookiePath = resolve(process.env["COOKIE_PATH"] || 'cookie');
 if (!cookiePath || !existsSync(cookiePath)) { console.log(`No cookie at ${cookiePath}`) }

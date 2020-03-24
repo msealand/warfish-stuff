@@ -1,5 +1,5 @@
 import { call } from './rest';
-import { readCache, writeCache } from './cache';
+import { readCache, writeCache } from '../cache';
 
 async function _getHistory(gameId: string, start: number = 0, count: number = 1500) {
     if (start == -1) console.log(`getting last move`);

@@ -1,11 +1,11 @@
 // import { call } from './rest';
-import { getHistory, getState, getDetails } from './api';
+// import { getHistory, getState, getDetails } from './api';
 // import { getData } from './units';
 
 import { resolve } from 'path';
-import { existsSync, readFileSync, writeFileSync, mkdirSync, fstat } from 'fs';
+import { existsSync, writeFileSync, mkdirSync } from 'fs';
 
-import { Game } from './game';
+import { Game } from './game/Game';
 import { drawMap } from './drawMap';
 
 const gameId = process.argv[2];
@@ -39,20 +39,20 @@ async function go() {
     // console.log();
 
 
-    const cachePath = resolve(process.env["CACHE_PATH"] || 'cache');
-    if (!existsSync(cachePath)) {
-        mkdirSync(cachePath);
-    }    
+    // const cachePath = resolve(process.env["CACHE_PATH"] || 'cache');
+    // if (!existsSync(cachePath)) {
+    //     mkdirSync(cachePath);
+    // }    
 
-    const gameDir = resolve(cachePath, game.id);
-    if (!existsSync(gameDir)) {
-        mkdirSync(gameDir);
-    }
+    // const gameDir = resolve(cachePath, game.id);
+    // if (!existsSync(gameDir)) {
+    //     mkdirSync(gameDir);
+    // }
 
-    const imageData = await drawMap(game);
-    const imagePath = resolve(gameDir, `map.png`);
-    writeFileSync(imagePath, imageData);
-    console.log(`saved map to: ${imagePath}`);
+    // const imageData = await drawMap(game);
+    // const imagePath = resolve(gameDir, `map.png`);
+    // writeFileSync(imagePath, imageData);
+    // console.log(`saved map to: ${imagePath}`);
 
     // let n = 0;
     // for (let idx = 0; idx < game.moves.length; idx++) {
