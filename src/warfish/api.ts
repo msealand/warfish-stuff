@@ -10,7 +10,10 @@ async function _getHistory(gameId: string, start: number = 0, count: number = 15
         _method: 'warfish.tables.getHistory',
         start: start,
         num: count,
-        _format: 'json'
+        _format: 'json',
+
+        p: 'a',
+        vt: 'b'
     }); 
 }
 

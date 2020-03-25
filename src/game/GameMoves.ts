@@ -158,6 +158,7 @@ ${this.defender?.name ?? "Neutral Territory"} lost ${this.defenderLosses} units`
         this.attackerDice.forEach((d) => {
             attackerState.attackDiceCounts[d-1]++;
         })
+        attackerState.attackedPlayer.set(this.defender, (attackerState.attackedPlayer.get(this.defender) ?? 0) + 1);
 
         const defenderState = newGameState.getPlayerState(this.defender);
         defenderState.defends += this.defenderUnits;

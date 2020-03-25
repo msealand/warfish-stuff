@@ -40,6 +40,7 @@ async function go() {
     game.currentState?.playerStates.forEach((state, player) => {
         console.log(`${player?.name ?? "Neutral Territory"}:`);
         console.dir(state);
+        state.dumpStats();
         console.log();
     })
 
@@ -77,7 +78,7 @@ async function go() {
         console.log(`saved map to: ${imagePath}`);
     }
 
-    {
+    if (game.currentState?.move) {
         const imageData = await drawMap(game, Number(game.currentState.move.id));
         // const imageData = await drawMap(game, 500);
         const imagePath = resolve(gameDir, `current.png`);

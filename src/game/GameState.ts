@@ -1,7 +1,6 @@
 import { GameMove } from "./GameMoves";
 import { Player } from "./Player";
 import { Territory } from "./Territory";
-import { threadId } from "worker_threads";
 
 
 export class PlayerState {
@@ -16,6 +15,10 @@ export class PlayerState {
             this.territoriesLost = previousState.territoriesLost
             this.attackDiceCounts = Array.from(previousState.attackDiceCounts);
             this.defenceDiceCounts = Array.from(previousState.defenceDiceCounts);
+
+            previousState?.attackedPlayer?.forEach((count, player) => {
+                this.attackedPlayer.set(player, count);
+            })
         }
     }
 
@@ -30,6 +33,16 @@ export class PlayerState {
 
     attackDiceCounts = (new Array(6)).fill(0, 0, 6);
     defenceDiceCounts = (new Array(6)).fill(0, 0, 6);
+
+    attackedPlayer = new Map<Player, number>();
+
+    dumpStats() {
+        const winsPercentage = (this.wins / (this.wins + this.losses));
+        const lossPercentage = (this.losses / (this.wins + this.losses));
+
+        console.log(` Win %: ${(winsPercentage * 100.0).toFixed(2)}%`)
+        console.log(`Lose %: ${(lossPercentage * 100.0).toFixed(2)}%`)
+    }
 }
 
 export class TerritoryState {

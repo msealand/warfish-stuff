@@ -13,7 +13,7 @@ export async function drawMap(game: Game, moveIdx?: number) {
     const isDrawingMove = (moveIdx !== undefined);
     const gameState = game.stateAfterMove(moveIdx);
 
-    console.log(`drawing state: ${gameState?.move?.description() ?? 'current'}`);
+    console.log(`drawing state: ${gameState?.move?.description() ?? 'no players'}`);
 
     const cachePath = resolve(process.env["CACHE_PATH"] || 'cache');
     if (!existsSync(cachePath)) {

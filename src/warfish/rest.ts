@@ -2,6 +2,7 @@ import * as request from 'request-promise-native';
 import { resolve } from 'path';
 import { existsSync, readFileSync, mkdirSync } from 'fs';
 import { readCache, writeCache } from '../cache';
+import { inspect } from 'util';
 
 const cookiePath = resolve(process.env["COOKIE_PATH"] || 'cookie');
 if (!cookiePath || !existsSync(cookiePath)) { console.log(`No cookie at ${cookiePath}`) }
@@ -31,6 +32,9 @@ export async function call(gameId: string, path: string, params: any, cacheFile?
     }
 
     const url = `${baseUrl}${path}`;
+
+    // console.log(url, inspect(params));
+
     const body = await request({ url, qs: params });
     const data = parseAPIData(body); // <-- parse data to catch error before saving to cache
 
@@ -38,6 +42,8 @@ export async function call(gameId: string, path: string, params: any, cacheFile?
         console.log(`saving to cache ${cacheFilePath}`);
         await writeCache(gameId, data, cacheFile);
     }
+
+    // console.dir(data, { depth: null });
 
     return data;
 }
